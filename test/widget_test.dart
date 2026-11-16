@@ -3,101 +3,82 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('Home divider separates an interactive Alarm card', (
+  testWidgets('splash animates and opens Home after three seconds', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const AmbulanceGalleryApp());
+    expect(find.byType(SplashScreen), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 2));
+    expect(find.byType(SplashScreen), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 1));
     await tester.pumpAndSettle();
-
-    expect(find.byType(Divider), findsOneWidget);
-    expect(find.text('Alarm'), findsOneWidget);
-    expect(find.text("Alarm at 10 o'clock"), findsOneWidget);
-    final card = tester.widget<Card>(find.byType(Card));
-    expect(card.elevation, 10);
-    expect(
-      (card.shape! as RoundedRectangleBorder).borderRadius,
-      BorderRadius.circular(20),
-    );
-
-    await tester.tap(find.text('Alarm'));
-    await tester.pumpAndSettle();
-
-    expect(find.byType(TimePickerDialog), findsOneWidget);
-  });
-
-  testWidgets('Photos tab shows the supplied photos and nature scenes', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const AmbulanceGalleryApp());
-    await tester.pumpAndSettle();
-
-    expect(find.text('Home'), findsNWidgets(2));
     expect(find.text('Welcome to My Gallery'), findsOneWidget);
-    expect(find.byType(BottomNavigationBar), findsOneWidget);
-
-    await tester.tap(find.text('Photos').last);
-    await tester.pumpAndSettle();
-
-    expect(find.text('All 6 of your photos.'), findsOneWidget);
-    expect(find.text('Your Photo'), findsOneWidget);
-    expect(find.text('Mountain Photo'), findsOneWidget);
-    expect(find.text('Forest Trail'), findsOneWidget);
-    expect(find.text('Mountain Lake'), findsOneWidget);
-
-    await tester.tap(find.text('Your Photo'));
-    await tester.pumpAndSettle();
-    expect(find.text('Photo you shared'), findsNWidgets(2));
-    await tester.tapAt(const Offset(10, 10));
-    await tester.pumpAndSettle();
-
-    await tester.scrollUntilVisible(
-      find.text('Mountain Peaks'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Green Forest'), findsOneWidget);
-    expect(find.text('Mountain Peaks'), findsOneWidget);
+    expect(find.text('Explore the list'), findsOneWidget);
   });
 
-  testWidgets('Albums tab opens the album containing all six photos', (
+  testWidgets('drawer opens the scrollable places list and back returns home', (
     WidgetTester tester,
   ) async {
     await tester.pumpWidget(const AmbulanceGalleryApp());
+    await tester.pump(const Duration(seconds: 3));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Albums').last);
+    await tester.tap(find.byTooltip('Open menu'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('My Album'));
-    await tester.pumpAndSettle();
-
-    expect(find.text('Your Photo'), findsOneWidget);
-    expect(find.text('Mountain Photo'), findsOneWidget);
-    expect(find.text('Forest Trail'), findsOneWidget);
-    expect(find.text('Mountain Lake'), findsOneWidget);
-    await tester.scrollUntilVisible(
-      find.text('Mountain Peaks'),
-      300,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('Green Forest'), findsOneWidget);
-    expect(find.text('Mountain Peaks'), findsOneWidget);
-  });
-
-  testWidgets('drawer Photos item selects the Photos tab', (
-    WidgetTester tester,
-  ) async {
-    await tester.pumpWidget(const AmbulanceGalleryApp());
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byIcon(Icons.menu));
-    await tester.pumpAndSettle();
-    expect(find.text('M Yasir'), findsOneWidget);
-    expect(find.text('63281@student.riphah.edu.pk'), findsOneWidget);
     await tester.tap(
-      find.descendant(of: find.byType(Drawer), matching: find.text('Photos')),
+      find.descendant(of: find.byType(Drawer), matching: find.text('Places')),
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('All 6 of your photos.'), findsOneWidget);
+    expect(find.text('Hunza Valley'), findsOneWidget);
+    expect(find.text('Swat Valley'), findsOneWidget);
+    expect(find.byType(ListView), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) => widget is Image && widget.semanticLabel == 'Hunza Valley',
+      ),
+      findsOneWidget,
+    );
+    await tester.scrollUntilVisible(
+      find.text('Ratti Gali Lake'),
+      300,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Ratti Gali Lake'), findsOneWidget);
+    expect(
+      find.byWidgetPredicate(
+        (widget) =>
+            widget is Image && widget.semanticLabel == 'Ratti Gali Lake',
+      ),
+      findsOneWidget,
+    );
+
+    await tester.tap(find.byTooltip('Back'));
+    await tester.pumpAndSettle();
+    expect(find.text('Welcome to My Gallery'), findsOneWidget);
+  });
+
+  testWidgets('About shows a scrollable six-photo grid', (
+    WidgetTester tester,
+  ) async {
+    await tester.pumpWidget(const AmbulanceGalleryApp());
+    await tester.pump(const Duration(seconds: 3));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('About this gallery'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('About My Gallery'), findsOneWidget);
+    expect(find.byType(GridView), findsOneWidget);
+    expect(find.text('Hunza Valley'), findsOneWidget);
+    expect(find.text('Swat Valley'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Naran'),
+      250,
+      scrollable: find.byType(Scrollable).last,
+    );
+    expect(find.text('Naran'), findsOneWidget);
   });
 }
